@@ -14,3 +14,14 @@ services:
       - "8501:8501"
     depends_on:
       - backend
+
+  test:
+    build: .
+    command: |
+      bash -c "pytest backend/tests"
+    volumes:
+      - ./backend:/Taxi_App/backend
+      - ./frontend:/Taxi_App/frontend
+    depends_on:
+      - backend
+      - frontend

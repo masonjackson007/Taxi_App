@@ -21,6 +21,9 @@ wheels/
 .installed.cfg
 *.egg
 *.log
+*.idea
+*.vscode
+*.venv
 
 #Project specific
 data/ 

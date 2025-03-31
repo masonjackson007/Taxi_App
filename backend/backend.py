@@ -1,6 +1,7 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 import logging
 from services.filter_service import FilterService
+from services.data_service import DataService
 
 app = Flask(__name__)
 
@@ -34,6 +35,47 @@ def get_filter_options():
 def generate_report():
     # Generate report based on selected filters
     pass
+
+@app.route('/api/timeseries', methods=['POST'])
+def generate_timeseries():
+    try:
+        # Get filter parameters from request
+        filters = request.get_json()
+        
+        # Validate date range parameters
+        start_date = filters.get('start_date')
+        end_date = filters.get('end_date')
+        
+        if not start_date or not end_date:
+            logger.error("Missing required date parameters")
+            return jsonify({
+                "error": "Missing required date range parameters"
+            }), 400
+            
+        # Initialize data service
+        data_service = DataService()
+        
+        # Get filtered data and analysis
+        result = data_service.analyze_timeseries(start_date, end_date)
+        
+        if result is None:
+            logger.error("Failed to generate time series analysis")
+            return jsonify({
+                "error": "Failed to generate time series analysis"
+            }), 500
+            
+        if "error" in result:
+            logger.warning(f"Time series analysis returned error: {result['error']}")
+            return jsonify(result), 404
+            
+        logger.info("Successfully generated time series analysis")
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Error generating time series: {str(e)}")
+        return jsonify({
+            "error": "Internal server error"
+        }), 500
 
 if __name__ == '__main__':
     logger.info("Starting Flask application")
