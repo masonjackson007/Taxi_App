@@ -8,20 +8,15 @@ services:
     volumes:
       - ./data:/Taxi_App/data
 
+  backend_test:
+    build: ./backend
+    volumes:
+      - ./data:/Taxi_App/data
+    command: pytest tests/ -v
+
   frontend:
     build: ./frontend
     ports:
       - "8501:8501"
     depends_on:
       - backend
-
-  test:
-    build: .
-    command: |
-      bash -c "pytest backend/tests"
-    volumes:
-      - ./backend:/Taxi_App/backend
-      - ./frontend:/Taxi_App/frontend
-    depends_on:
-      - backend
-      - frontend
