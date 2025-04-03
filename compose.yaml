@@ -18,5 +18,7 @@ services:
     build: ./frontend
     ports:
       - "8501:8501"
+    environment:
+      - BACKEND_API_URL=http://backend:5000/api
     depends_on:
       - backend

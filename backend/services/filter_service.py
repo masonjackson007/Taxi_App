@@ -51,6 +51,21 @@ class FilterService:
             self.logger.error(f"Error getting date range: {str(e)}")
             return None
 
+    def get_passenger_counts(self):
+        # Get unique passenger counts from the data
+        if self.data is None:
+            self.logger.error("Data not loaded. Call load_data() first")
+            return None
+            
+        try:
+            passenger_counts = sorted(self.data['passenger_count'].unique().tolist())
+            self.logger.info(f"Found {len(passenger_counts)} unique passenger counts: {passenger_counts}")
+            return passenger_counts
+            
+        except Exception as e:
+            self.logger.error(f"Error getting passenger counts: {str(e)}")
+            return None
+
     def get_available_filters(self):
         # Get all available filter options
         if not self.load_data():
@@ -60,6 +75,11 @@ class FilterService:
         if not date_range:
             return None
             
+        passenger_counts = self.get_passenger_counts()
+        if passenger_counts is None:
+            return None
+            
         return {
-            'date_range': date_range
+            'date_range': date_range,
+            'passenger_counts': passenger_counts
         }
