@@ -52,11 +52,14 @@ def generate_timeseries():
                 "error": "Missing required date range parameters"
             }), 400
             
+        # Get passenger counts filter if provided
+        passenger_counts = filters.get('passenger_counts')
+            
         # Initialize data service
         data_service = DataService()
         
         # Get filtered data and analysis
-        result = data_service.analyze_timeseries(start_date, end_date)
+        result = data_service.analyze_timeseries(start_date, end_date, passenger_counts)
         
         if result is None:
             logger.error("Failed to generate time series analysis")

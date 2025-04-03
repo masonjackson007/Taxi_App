@@ -61,9 +61,14 @@ class DataService:
         # Create graphs/charts
         pass
 
-    def analyze_timeseries(self, start_date, end_date):
+    def analyze_timeseries(self, start_date, end_date, passenger_counts=None):
         """
-        Analyze trip data within the specified date range and return time series data
+        Analyze trip data within the specified date range and passenger counts and return time series data
+        
+        Args:
+            start_date: Start date for filtering
+            end_date: End date for filtering
+            passenger_counts: Optional list of passenger count values to filter by
         """
         try:
             # Load data if not already loaded
@@ -96,12 +101,22 @@ class DataService:
 
             # Filter data by date range
             mask = (self.df['tpep_pickup_datetime'] >= start_dt) & (self.df['tpep_pickup_datetime'] <= end_dt)
+            
+            # Apply passenger count filter if provided
+            if passenger_counts and len(passenger_counts) > 0:
+                self.logger.info(f"Filtering by passenger counts: {passenger_counts}")
+                mask = mask & (self.df['passenger_count'].isin(passenger_counts))
+            
             filtered_df = self.df[mask]
 
             if filtered_df.empty:
-                self.logger.warning("No data found for the specified date range")
+                filter_desc = f"date range {start_date} to {end_date}"
+                if passenger_counts and len(passenger_counts) > 0:
+                    filter_desc += f" and passenger counts {passenger_counts}"
+                
+                self.logger.warning(f"No data found for the specified {filter_desc}")
                 return {
-                    "error": "No data found for the specified date range"
+                    "error": f"No data found for the specified {filter_desc}"
                 }
 
             # Group by date and count trips
@@ -138,6 +153,7 @@ class DataService:
                 "filter_info": {
                     "start_date": start_date,
                     "end_date": end_date,
+                    "passenger_counts": passenger_counts if passenger_counts else "all",
                     "total_days": len(daily_trips)
                 }
             }

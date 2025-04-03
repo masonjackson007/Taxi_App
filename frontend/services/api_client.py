@@ -74,13 +74,14 @@ def fetch_filter_options() -> dict:
     return make_request("GET", "filters")
 
 
-def fetch_timeseries_data(start_date: date, end_date: date) -> dict:
+def fetch_timeseries_data(start_date: date, end_date: date, passenger_counts: list = None) -> dict:
     """
-    Fetches time series data from the backend API based on dates.
+    Fetches time series data from the backend API based on dates and passenger counts.
 
     Args:
         start_date: The start date for the analysis.
         end_date: The end date for the analysis.
+        passenger_counts: Optional list of passenger count values to filter by.
 
     Returns:
         A dictionary containing the API response data.
@@ -88,9 +89,14 @@ def fetch_timeseries_data(start_date: date, end_date: date) -> dict:
     Raises:
         ApiClientError: If the API request fails or returns an error status.
     """
-    logger.info(f"Attempting to fetch time series data from {start_date} to {end_date}.")
+    logger.info(f"Attempting to fetch time series data from {start_date} to {end_date} with passenger counts: {passenger_counts}.")
     payload = {
         "start_date": start_date.strftime("%Y-%m-%d"),
         "end_date": end_date.strftime("%Y-%m-%d")
     }
+    
+    # Add passenger counts filter if provided
+    if passenger_counts is not None:
+        payload["passenger_counts"] = passenger_counts
+        
     return make_request("POST", "timeseries", json=payload)

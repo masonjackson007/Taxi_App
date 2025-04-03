@@ -91,6 +91,20 @@ selected_end_date = st.sidebar.date_input(
     max_value=max_available_date
 )
 
+# Add passenger count filter
+st.sidebar.subheader("Passenger Counts")
+
+# Get passenger counts from filter options
+passenger_counts = filter_options.get('passenger_counts', [1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+# Add "Select All" checkbox
+select_all = st.sidebar.checkbox("Select All", value=True)
+
+# Create checkboxes for each passenger count
+passenger_count_filters = {}
+for count in passenger_counts:
+    passenger_count_filters[count] = st.sidebar.checkbox(f"{count} passenger{'s' if count > 1 else ''}", value=select_all)
+
 # Function to Process API Data into DataFrame and Stats 
 def process_api_response(api_data: dict) -> tuple[pd.DataFrame | None, dict | None]:
     """
@@ -197,11 +211,23 @@ if st.sidebar.button("Analyze Data", type="primary"):
         st.markdown("---")
         st.subheader(f"Analysis Results: {selected_start_date.strftime('%Y-%m-%d')} to {selected_end_date.strftime('%Y-%m-%d')}")
 
+        # Get selected passenger counts
+        selected_passenger_counts = [count for count, selected in passenger_count_filters.items() if selected]
+        
+        # Show a description of the filters
+        filter_desc = f"Date range: {selected_start_date.strftime('%Y-%m-%d')} to {selected_end_date.strftime('%Y-%m-%d')}"
+        passenger_desc = f"Passenger counts: {', '.join(map(str, selected_passenger_counts))}" if selected_passenger_counts else "Passenger counts: none selected"
+        st.caption(f"{filter_desc} | {passenger_desc}")
+
         # Show a spinner while fetching data
         with st.spinner(f"Fetching and analyzing data from {selected_start_date} to {selected_end_date}..."):
             try:
-                # Fetch Data
-                api_data = fetch_timeseries_data(selected_start_date, selected_end_date)
+                # Fetch Data with passenger count filter
+                api_data = fetch_timeseries_data(
+                    selected_start_date, 
+                    selected_end_date,
+                    selected_passenger_counts if selected_passenger_counts else None
+                )
 
                 # Process Data 
                 df, stats = process_api_response(api_data)
@@ -214,7 +240,12 @@ if st.sidebar.button("Analyze Data", type="primary"):
                     # Show filter info from response
                     filter_info = api_data.get('filter_info')
                     if filter_info:
-                        st.caption(f"Analysis based on {filter_info.get('total_days', 'N/A')} days of data within the selected range.")
+                        filter_desc = f"Analysis based on {filter_info.get('total_days', 'N/A')} days of data"
+                        passenger_info = filter_info.get('passenger_counts', 'all')
+                        if passenger_info != 'all':
+                            passenger_desc = f" with passenger counts: {', '.join(map(str, passenger_info))}"
+                            filter_desc += passenger_desc
+                        st.caption(filter_desc)
                 else:
                     st.warning("Analysis could not be completed due to data processing errors. See messages above.")
 
