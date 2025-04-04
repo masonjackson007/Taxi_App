@@ -61,14 +61,16 @@ class DataService:
         # Create graphs/charts
         pass
 
-    def analyze_timeseries(self, start_date, end_date, passenger_counts=None):
+    def analyze_timeseries(self, start_date, end_date, passenger_counts=None, min_distance=None, max_distance=None):
         """
-        Analyze trip data within the specified date range and passenger counts and return time series data
+        Analyze trip data within the specified date range, passenger counts, and distance range and return time series data
         
         Args:
             start_date: Start date for filtering
             end_date: End date for filtering
             passenger_counts: Optional list of passenger count values to filter by
+            min_distance: Optional minimum trip distance (miles) to filter by
+            max_distance: Optional maximum trip distance (miles) to filter by
         """
         try:
             # Load data if not already loaded
@@ -107,12 +109,30 @@ class DataService:
                 self.logger.info(f"Filtering by passenger counts: {passenger_counts}")
                 mask = mask & (self.df['passenger_count'].isin(passenger_counts))
             
+            # Apply distance filters if provided
+            if min_distance is not None:
+                self.logger.info(f"Filtering by minimum distance: {min_distance} miles")
+                mask = mask & (self.df['trip_distance'] >= min_distance)
+                
+            if max_distance is not None:
+                self.logger.info(f"Filtering by maximum distance: {max_distance} miles")
+                mask = mask & (self.df['trip_distance'] <= max_distance)
+            
             filtered_df = self.df[mask]
 
             if filtered_df.empty:
                 filter_desc = f"date range {start_date} to {end_date}"
                 if passenger_counts and len(passenger_counts) > 0:
                     filter_desc += f" and passenger counts {passenger_counts}"
+                if min_distance is not None or max_distance is not None:
+                    distance_desc = " and distance range "
+                    if min_distance is not None:
+                        distance_desc += f"from {min_distance} miles"
+                    if min_distance is not None and max_distance is not None:
+                        distance_desc += " to "
+                    if max_distance is not None:
+                        distance_desc += f"to {max_distance} miles"
+                    filter_desc += distance_desc
                 
                 self.logger.warning(f"No data found for the specified {filter_desc}")
                 return {
@@ -154,6 +174,8 @@ class DataService:
                     "start_date": start_date,
                     "end_date": end_date,
                     "passenger_counts": passenger_counts if passenger_counts else "all",
+                    "min_distance": min_distance,
+                    "max_distance": max_distance,
                     "total_days": len(daily_trips)
                 }
             }

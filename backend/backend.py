@@ -54,12 +54,22 @@ def generate_timeseries():
             
         # Get passenger counts filter if provided
         passenger_counts = filters.get('passenger_counts')
+        
+        # Get distance range filters if provided
+        min_distance = filters.get('min_distance')
+        max_distance = filters.get('max_distance')
             
         # Initialize data service
         data_service = DataService()
         
         # Get filtered data and analysis
-        result = data_service.analyze_timeseries(start_date, end_date, passenger_counts)
+        result = data_service.analyze_timeseries(
+            start_date, 
+            end_date, 
+            passenger_counts,
+            min_distance,
+            max_distance
+        )
         
         if result is None:
             logger.error("Failed to generate time series analysis")

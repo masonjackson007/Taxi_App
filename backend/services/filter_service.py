@@ -65,6 +65,26 @@ class FilterService:
         except Exception as e:
             self.logger.error(f"Error getting passenger counts: {str(e)}")
             return None
+    
+    def get_distance_range(self):
+        # Get min and max trip distances from the data
+        if self.data is None:
+            self.logger.error("Data not loaded. Call load_data() first")
+            return None
+            
+        try:
+            min_distance = float(self.data['trip_distance'].min())
+            max_distance = float(self.data['trip_distance'].max())
+            
+            self.logger.info(f"Trip distance range found: {min_distance} to {max_distance} miles")
+            return {
+                'min_distance': min_distance,
+                'max_distance': max_distance
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting trip distance range: {str(e)}")
+            return None
 
     def get_available_filters(self):
         # Get all available filter options
@@ -78,8 +98,13 @@ class FilterService:
         passenger_counts = self.get_passenger_counts()
         if passenger_counts is None:
             return None
+        
+        distance_range = self.get_distance_range()
+        if distance_range is None:
+            return None
             
         return {
             'date_range': date_range,
-            'passenger_counts': passenger_counts
+            'passenger_counts': passenger_counts,
+            'distance_range': distance_range
         }

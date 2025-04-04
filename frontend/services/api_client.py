@@ -74,14 +74,20 @@ def fetch_filter_options() -> dict:
     return make_request("GET", "filters")
 
 
-def fetch_timeseries_data(start_date: date, end_date: date, passenger_counts: list = None) -> dict:
+def fetch_timeseries_data(start_date: date, 
+                          end_date: date, 
+                          passenger_counts: list = None, 
+                          min_distance: float = None, 
+                          max_distance: float = None) -> dict:
     """
-    Fetches time series data from the backend API based on dates and passenger counts.
+    Fetches time series data from the backend API based on dates, passenger counts, and distance range.
 
     Args:
         start_date: The start date for the analysis.
         end_date: The end date for the analysis.
         passenger_counts: Optional list of passenger count values to filter by.
+        min_distance: Optional minimum trip distance (miles).
+        max_distance: Optional maximum trip distance (miles).
 
     Returns:
         A dictionary containing the API response data.
@@ -89,7 +95,10 @@ def fetch_timeseries_data(start_date: date, end_date: date, passenger_counts: li
     Raises:
         ApiClientError: If the API request fails or returns an error status.
     """
-    logger.info(f"Attempting to fetch time series data from {start_date} to {end_date} with passenger counts: {passenger_counts}.")
+    logger.info(f"Attempting to fetch time series data from {start_date} to {end_date} " +
+               f"with passenger counts: {passenger_counts}, " +
+               f"distance range: {min_distance}-{max_distance} miles.")
+    
     payload = {
         "start_date": start_date.strftime("%Y-%m-%d"),
         "end_date": end_date.strftime("%Y-%m-%d")
@@ -98,5 +107,12 @@ def fetch_timeseries_data(start_date: date, end_date: date, passenger_counts: li
     # Add passenger counts filter if provided
     if passenger_counts is not None:
         payload["passenger_counts"] = passenger_counts
+    
+    # Add distance range filters if provided
+    if min_distance is not None:
+        payload["min_distance"] = min_distance
+    
+    if max_distance is not None:
+        payload["max_distance"] = max_distance
         
     return make_request("POST", "timeseries", json=payload)

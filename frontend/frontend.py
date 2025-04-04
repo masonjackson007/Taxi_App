@@ -105,6 +105,57 @@ passenger_count_filters = {}
 for count in passenger_counts:
     passenger_count_filters[count] = st.sidebar.checkbox(f"{count} passenger{'s' if count > 1 else ''}", value=select_all)
 
+# Add the distance range filter to the sidebar
+st.sidebar.subheader("Trip Distance (miles)")
+
+# Get distance range from filter options
+distance_range = filter_options.get('distance_range', {'min_distance': 0, 'max_distance': 50})
+min_available_distance = distance_range.get('min_distance', 0)
+max_available_distance = distance_range.get('max_distance', 50)
+
+# Add distance range slider with number inputs
+col1, col2 = st.sidebar.columns(2)
+with col1:
+    min_distance_input = st.number_input(
+        "Min Distance",
+        min_value=float(min_available_distance),
+        max_value=float(max_available_distance),
+        value=float(min_available_distance),
+        step=0.1,
+        format="%.1f"
+    )
+with col2:
+    max_distance_input = st.number_input(
+        "Max Distance",
+        min_value=float(min_available_distance),
+        max_value=float(max_available_distance),
+        value=float(max_available_distance),
+        step=0.1,
+        format="%.1f"
+    )
+
+# Add a slider for distance range
+distance_values = st.sidebar.slider(
+    "Distance Range (miles)",
+    min_value=float(min_available_distance),
+    max_value=float(max_available_distance),
+    value=(float(min_distance_input), float(max_distance_input)),
+    step=0.1
+)
+
+# Update number inputs when slider changes
+min_distance = distance_values[0]
+max_distance = distance_values[1]
+if min_distance != min_distance_input or max_distance != max_distance_input:
+    min_distance_input = min_distance
+    max_distance_input = max_distance
+
+# Update slider when number inputs change
+if min_distance_input != min_distance or max_distance_input != max_distance:
+    distance_values = (min_distance_input, max_distance_input)
+    min_distance = min_distance_input
+    max_distance = max_distance_input
+
 # Function to Process API Data into DataFrame and Stats 
 def process_api_response(api_data: dict) -> tuple[pd.DataFrame | None, dict | None]:
     """
@@ -217,7 +268,8 @@ if st.sidebar.button("Analyze Data", type="primary"):
         # Show a description of the filters
         filter_desc = f"Date range: {selected_start_date.strftime('%Y-%m-%d')} to {selected_end_date.strftime('%Y-%m-%d')}"
         passenger_desc = f"Passenger counts: {', '.join(map(str, selected_passenger_counts))}" if selected_passenger_counts else "Passenger counts: none selected"
-        st.caption(f"{filter_desc} | {passenger_desc}")
+        distance_desc = f"Distance range: {min_distance:.1f} to {max_distance:.1f} miles"
+        st.caption(f"{filter_desc} | {passenger_desc} | {distance_desc}")
 
         # Show a spinner while fetching data
         with st.spinner(f"Fetching and analyzing data from {selected_start_date} to {selected_end_date}..."):
@@ -226,7 +278,9 @@ if st.sidebar.button("Analyze Data", type="primary"):
                 api_data = fetch_timeseries_data(
                     selected_start_date, 
                     selected_end_date,
-                    selected_passenger_counts if selected_passenger_counts else None
+                    selected_passenger_counts if selected_passenger_counts else None,
+                    min_distance,
+                    max_distance
                 )
 
                 # Process Data 
