@@ -1,4 +1,3 @@
-# frontend/pages/documentation.py
 import streamlit as st
 import os
 
@@ -17,6 +16,7 @@ documentation_path = os.path.join(os.path.dirname(__file__), "documentation.md")
 try:
     with open(documentation_path, "r") as file:
         documentation_content = file.read()
+    
     # Display the markdown content
     st.markdown(documentation_content)
 except FileNotFoundError:

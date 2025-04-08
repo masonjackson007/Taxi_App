@@ -4,6 +4,9 @@ import plotly.express as px
 from datetime import datetime, timedelta, date
 import pandas as pd
 import logging
+import re
+import os
+from pathlib import Path
 from services.api_client import fetch_filter_options, fetch_timeseries_data
 
 logger = logging.getLogger(__name__)
@@ -15,6 +18,112 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Initialize session state for search functionality
+if 'search_query' not in st.session_state:
+    st.session_state.search_query = ""
+if 'show_search_results' not in st.session_state:
+    st.session_state.show_search_results = False
+if 'search_results' not in st.session_state:
+    st.session_state.search_results = []
+
+# Function to perform search across content files
+def perform_search(query):
+    results = []
+    
+    if not query.strip():
+        return results
+    
+    # Define files to search
+    search_files = [
+        {"path": os.path.join(os.path.dirname(__file__), "pages", "documentation.md"), 
+         "type": "Documentation", 
+         "url": "Documentation"},
+        {"path": os.path.join(os.path.dirname(__file__), "pages", "static_report.py"), 
+         "type": "Static Report", 
+         "url": "Static_report"}
+    ]
+    
+    # Search each file
+    for file_info in search_files:
+        try:
+            if os.path.exists(file_info["path"]):
+                with open(file_info["path"], "r") as file:
+                    content = file.read()
+                    
+                    # For Python files, extract string literals and comments
+                    if file_info["path"].endswith(".py"):
+                        # Extract only markdown content from triple-quoted strings
+                        md_contents = re.findall(r'"""(.*?)"""', content, re.DOTALL)
+                        searchable_content = "\n".join(md_contents)
+                    else:
+                        searchable_content = content
+                    
+                    # Find all matches with context
+                    query_pattern = re.compile(re.escape(query), re.IGNORECASE)
+                    for match in query_pattern.finditer(searchable_content):
+                        # Get some context around the match
+                        start = max(0, match.start() - 40)
+                        end = min(len(searchable_content), match.end() + 40)
+                        
+                        # Extract the context
+                        context = searchable_content[start:end]
+                        
+                        # Highlight the match in the context
+                        highlighted_context = re.sub(
+                            re.escape(match.group(0)),
+                            f"**{match.group(0)}**",
+                            context,
+                            flags=re.IGNORECASE
+                        )
+                        
+                        # Find the line number
+                        line_number = searchable_content[:match.start()].count('\n') + 1
+                        
+                        # Add to results
+                        results.append({
+                            "file_type": file_info["type"],
+                            "line": line_number,
+                            "context": highlighted_context,
+                            "url": file_info["url"]
+                        })
+        except Exception as e:
+            logger.error(f"Error searching file {file_info['path']}: {e}")
+    
+    return results
+
+# Search bar at the top of the application
+with st.container():
+    col1, col2, col3 = st.columns([1, 3, 1])
+    with col2:
+        search_query = st.text_input("🔍 Search across pages", value=st.session_state.search_query)
+        search_button = st.button("Search")
+        
+        if search_button or (search_query != st.session_state.search_query and search_query.strip()):
+            st.session_state.search_query = search_query
+            if search_query.strip():
+                # Perform search and save results in session state
+                st.session_state.search_results = perform_search(search_query)
+                st.session_state.show_search_results = True
+            else:
+                st.session_state.show_search_results = False
+
+# Display search results if any
+if st.session_state.show_search_results and st.session_state.search_results:
+    st.subheader(f"Search Results ({len(st.session_state.search_results)})")
+    
+    # Create a DataFrame from search results for better display
+    results_df = pd.DataFrame(st.session_state.search_results)
+    
+    # Display results in a table
+    for i, row in enumerate(st.session_state.search_results):
+        with st.container():
+            st.markdown(f"**Result {i+1}**: {row['file_type']} (Line {row['line']})")
+            st.markdown(row['context'])
+            st.divider()
+            
+elif st.session_state.show_search_results and not st.session_state.search_results:
+    st.warning(f"No results found for '{st.session_state.search_query}'")
 
 # Helper Function for Date Conversion
 def parse_api_date(date_str: str) -> date | None:
@@ -253,14 +362,14 @@ def display_time_series_plots(df: pd.DataFrame):
     with st.expander("View Raw Data Table"):
         st.dataframe(df)
         
-        # Add download button for CSV export
-        csv = df.to_csv(index=True)
-        st.download_button(
-            label="Download data as CSV",
-            data=csv,
-            file_name="taxi_data.csv",
-            mime="text/csv",
-        )
+    # Add download button for CSV export
+    csv = df.to_csv(index=True)
+    st.download_button(
+        label="Download data as CSV",
+        data=csv,
+        file_name="taxi_data.csv",
+        mime="text/csv",
+    )
 
 if st.sidebar.button("Analyze Data", type="primary"):
 

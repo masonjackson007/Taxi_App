@@ -88,7 +88,7 @@ The filters provided allow you to segment the data in meaningful ways:
 Here are a couple of ways you might combine filters to explore the data:
 
 *   **Example 1: Analyzing Long Weekend Trips**
-    *   Set the **Date Range** to cover a specific Friday-to-Sunday period within January 2023.
+    *   Set the **Date Range** to cover a specific Friday-to-Sunday period within January 2025.
     *   Set the **Mileage Range** sliders to a minimum of `10` miles and a maximum of `100` miles.
     *   Check all **Passenger Count**
     *   Click **'Apply Filters'**.
