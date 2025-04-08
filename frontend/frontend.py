@@ -252,6 +252,15 @@ def display_time_series_plots(df: pd.DataFrame):
     # Display the raw data in an expander
     with st.expander("View Raw Data Table"):
         st.dataframe(df)
+        
+        # Add download button for CSV export
+        csv = df.to_csv(index=True)
+        st.download_button(
+            label="Download data as CSV",
+            data=csv,
+            file_name="taxi_data.csv",
+            mime="text/csv",
+        )
 
 if st.sidebar.button("Analyze Data", type="primary"):
 
