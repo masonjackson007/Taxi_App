@@ -8,6 +8,8 @@ import re
 import os
 from pathlib import Path
 from services.api_client import fetch_filter_options, fetch_timeseries_data
+from components.header import render_header
+from services.auth_service import is_authenticated
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -91,6 +93,15 @@ def perform_search(query):
             logger.error(f"Error searching file {file_info['path']}: {e}")
     
     return results
+
+# Render header component
+render_header()
+
+# Check authentication status - redirect to login if not authenticated
+if not is_authenticated():
+    st.warning("Please log in to access the dashboard")
+    st.button("Go to Login", on_click=lambda: st.switch_page("pages/login.py"))
+    st.stop()
 
 # Search bar at the top of the application
 with st.container():

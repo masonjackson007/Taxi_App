@@ -1,18 +1,39 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=taxiapp
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
   backend:
     build: ./backend
     ports:
       - "5000:5000"
     volumes:
       - ./data:/Taxi_App/data
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/taxiapp
+      - JWT_SECRET_KEY=change_this_in_production_env
+    depends_on:
+      - db
 
   backend_test:
     build: ./backend
     volumes:
       - ./data:/Taxi_App/data
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/taxiapp_test
+      - JWT_SECRET_KEY=test_secret_key
     command: pytest tests/ -v
+    depends_on:
+      - db
 
   frontend:
     build: ./frontend
@@ -22,3 +43,6 @@ services:
       - BACKEND_API_URL=http://backend:5000/api
     depends_on:
       - backend
+
+volumes:
+  postgres_data:

@@ -3,3 +3,10 @@ pandas==2.2.3
 requests==2.32.0
 pyarrow==15.0.0
 pytest==7.4.3
+sqlalchemy==2.0.29
+psycopg2-binary==2.9.9
+flask-sqlalchemy==3.1.1
+flask-migrate==4.0.5
+flask-jwt-extended==4.6.0
+passlib==1.7.4
+bcrypt==4.1.2

@@ -1,9 +1,19 @@
 from flask import Flask, request, jsonify
 import logging
+import os
+from datetime import timedelta
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 from services.filter_service import FilterService
 from services.data_service import DataService
+from services.auth_service import AuthService
+from database import init_db
 
 app = Flask(__name__)
+
+# Configure JWT
+app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY") 
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
+jwt = JWTManager(app)
 
 # Configure logging
 logging.basicConfig(
@@ -12,10 +22,108 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Initialize database
+with app.app_context():
+    init_db()
+    logger.info("Database initialized")
+
 @app.route('/test')
 def test_endpoint():
     logger.info("Test endpoint was called")
     return {"message": "Test successful"}
+
+# Authentication routes
+@app.route('/api/auth/register', methods=['POST'])
+def register():
+    try:
+        data = request.get_json()
+        
+        # Validate input
+        if not data or not data.get('email') or not data.get('password'):
+            return jsonify({
+                "error": "Email and password are required"
+            }), 400
+            
+        email = data.get('email')
+        password = data.get('password')
+        
+        # Register user
+        auth_service = AuthService()
+        success, message, user_id = auth_service.register_user(email, password)
+        
+        if success:
+            return jsonify({
+                "message": message,
+                "user_id": user_id
+            }), 201
+        else:
+            return jsonify({
+                "error": message
+            }), 400
+            
+    except Exception as e:
+        logger.error(f"Error in register endpoint: {str(e)}")
+        return jsonify({
+            "error": "Registration failed"
+        }), 500
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    try:
+        data = request.get_json()
+        
+        # Validate input
+        if not data or not data.get('email') or not data.get('password'):
+            return jsonify({
+                "error": "Email and password are required"
+            }), 400
+            
+        email = data.get('email')
+        password = data.get('password')
+        
+        # Authenticate user
+        auth_service = AuthService()
+        success, message, token = auth_service.authenticate_user(email, password)
+        
+        if success:
+            return jsonify({
+                "message": message,
+                "access_token": token
+            }), 200
+        else:
+            return jsonify({
+                "error": message
+            }), 401
+            
+    except Exception as e:
+        logger.error(f"Error in login endpoint: {str(e)}")
+        return jsonify({
+            "error": "Login failed"
+        }), 500
+
+@app.route('/api/auth/user', methods=['GET'])
+@jwt_required()
+def get_user():
+    try:
+        user_identity = get_jwt_identity()
+        user_id = user_identity.get('user_id')
+        
+        # Get user info
+        auth_service = AuthService()
+        user_info = auth_service.get_user_by_id(user_id)
+        
+        if user_info:
+            return jsonify(user_info), 200
+        else:
+            return jsonify({
+                "error": "User not found"
+            }), 404
+            
+    except Exception as e:
+        logger.error(f"Error in get_user endpoint: {str(e)}")
+        return jsonify({
+            "error": "Failed to retrieve user information"
+        }), 500
 
 @app.route('/api/filters', methods=['GET'])
 def get_filter_options():

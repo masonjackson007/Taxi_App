@@ -1,5 +1,16 @@
 import streamlit as st
 from pathlib import Path
+from components.header import render_header
+
+# Set page title
+st.set_page_config(
+    page_title="Taxi Data Dashboard - Static Report",
+    layout="wide"
+)
+
+# Render header component
+render_header()
+    
 
 st.title("Static Report: NYC Yellow Taxi Insights (January 2025)")
 

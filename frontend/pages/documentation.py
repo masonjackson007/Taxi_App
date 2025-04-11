@@ -1,11 +1,15 @@
 import streamlit as st
 import os
+from components.header import render_header
 
 # Set page title
 st.set_page_config(
     page_title="Taxi Data Dashboard - Documentation",
     layout="wide"
 )
+
+# Render header component
+render_header()
 
 st.title("Taxi Data Dashboard - Documentation")
 
