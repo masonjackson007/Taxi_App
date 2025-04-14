@@ -24,6 +24,6 @@ try:
     # Display the markdown content
     st.markdown(documentation_content)
 except FileNotFoundError:
-    st.error(f"Documentation file not found at {documentation_path}")
+    st.error(f"Documentation file not found")
 except Exception as e:
-    st.error(f"Error loading documentation: {e}")
+    st.error(f"Error loading documentation")

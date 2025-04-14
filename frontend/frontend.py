@@ -134,7 +134,7 @@ if st.session_state.show_search_results and st.session_state.search_results:
             st.divider()
             
 elif st.session_state.show_search_results and not st.session_state.search_results:
-    st.warning(f"No results found for '{st.session_state.search_query}'")
+    st.warning(f"No results found")
 
 # Helper Function for Date Conversion
 def parse_api_date(date_str: str) -> date | None:
@@ -164,11 +164,11 @@ def load_filter_options():
         return options
     except ApiClientError as e:
         logger.error(f"Failed to load filter options: {e}")
-        st.error(f"Could not load filter options from backend: {e}")
+        st.error(f"Could not load filter options from backend")
         return None
     except Exception as e:
         logger.error(f"Unexpected error loading filter options: {e}")
-        st.error(f"An unexpected error occurred while loading filter options: {e}")
+        st.error(f"An unexpected error occurred while loading filter options")
         return None
 
 # Main App Logic
@@ -194,7 +194,7 @@ try:
 
 except (KeyError, ValueError, TypeError) as e:
     logger.error(f"Error processing date range from filter_options: {e} - Options: {filter_options}")
-    st.error(f"Error processing available date range from backend. Details: {e}")
+    st.error(f"Error processing available date range from backend")
 
 # Sidebar Filters
 st.sidebar.header("Filters")
@@ -305,13 +305,13 @@ def process_api_response(api_data: dict) -> tuple[pd.DataFrame | None, dict | No
     
     except KeyError as e:
         logger.error(f"KeyError processing API data: Missing key {e}. Data: {api_data}")
-        st.error(f"Error processing API data: Missing expected key '{e}'. Check the API response structure.")
+        st.error(f"Error processing API data")
         st.json(api_data) 
         return None, None
     
     except Exception as e:
         logger.error(f"Unexpected error processing data: {e}. Data: {api_data}")
-        st.error(f"An unexpected error occurred while processing data: {e}")
+        st.error(f"An unexpected error occurred while processing data")
         st.json(api_data)
         return None, None
 
@@ -353,7 +353,7 @@ def display_time_series_plots(df: pd.DataFrame):
         st.plotly_chart(fig_trips_pass, use_container_width=True)
     except Exception as e:
         logger.error(f"Error creating Trips/Passengers plot: {e}")
-        st.error(f"Could not display Trips/Passengers plot. Error: {e}")
+        st.error(f"Could not display Trips/Passengers plot")
 
 
     # Plot Revenue
@@ -366,7 +366,7 @@ def display_time_series_plots(df: pd.DataFrame):
         st.plotly_chart(fig_revenue, use_container_width=True)
     except Exception as e:
         logger.error(f"Error creating Revenue plot: {e}")
-        st.error(f"Could not display Revenue plot. Error: {e}")
+        st.error(f"Could not display Revenue plot")
 
 
     # Display the raw data in an expander
@@ -430,7 +430,7 @@ if st.sidebar.button("Analyze Data", type="primary"):
                             filter_desc += passenger_desc
                         st.caption(filter_desc)
                 else:
-                    st.warning("Analysis could not be completed due to data processing errors. See messages above.")
+                    st.warning("Analysis could not be completed due to data processing errors")
 
             except ApiClientError as e:
                 logger.error(f"API Client Error on analyze: {e}")
@@ -438,7 +438,7 @@ if st.sidebar.button("Analyze Data", type="primary"):
                 st.info("Please ensure the backend service is running and check its logs for more details.")
             except Exception as e:
                 logger.exception(f"An unexpected error occurred during analysis: {e}") 
-                st.error(f"An unexpected error occurred: {e}")
+                st.error(f"An unexpected error occurred")
 
 else:
     # Message shown before the button is clicked

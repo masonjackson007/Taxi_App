@@ -50,7 +50,7 @@ with col2:
     if image_path.is_file():
         st.image(str(image_path), caption="Number of Yellow Taxi trips per day in January 2025.")
     else:
-        st.warning(f"Image not found: {image_path}")
+        st.warning(f"Image not found")
 
 st.divider()
 
@@ -73,7 +73,7 @@ with col1:
     if image_path.is_file():
         st.image(str(image_path), caption="Distribution of trip distances (miles) for Jan 2025.")
     else:
-        st.warning(f"Image not found: {image_path}")
+        st.warning(f"Image not found")
 
 with col2:
     st.markdown(insight2_content)
@@ -104,7 +104,7 @@ with col2:
     if image_path.is_file():
         st.image(str(image_path), caption="Frequency of passenger counts per trip for Jan 2025.")
     else:
-        st.warning(f"Image not found: {image_path}")
+        st.warning(f"Image not found")
 
 
 st.divider()
@@ -128,7 +128,7 @@ with col1:
      if image_path.is_file():
         st.image(str(image_path), caption="Distribution of total fare amounts ($) for Jan 2025.")
      else:
-        st.warning(f"Image not found: {image_path}")
+        st.warning(f"Image not found")
 
 with col2:
     st.markdown(insight4_content)

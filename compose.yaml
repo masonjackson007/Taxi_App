@@ -19,21 +19,25 @@ services:
     volumes:
       - ./data:/Taxi_App/data
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/taxiapp
-      - JWT_SECRET_KEY=change_this_in_production_env
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     depends_on:
       - db
+    env_file:
+      - .env
 
   backend_test:
     build: ./backend
     volumes:
       - ./data:/Taxi_App/data
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/taxiapp_test
-      - JWT_SECRET_KEY=test_secret_key
+      - DATABASE_URL=${DATABASE_TEST_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     command: pytest tests/ -v
     depends_on:
       - db
+    env_file:
+      - .env
 
   frontend:
     build: ./frontend
@@ -43,6 +47,8 @@ services:
       - BACKEND_API_URL=http://backend:5000/api
     depends_on:
       - backend
+    env_file:
+      - .env
 
 volumes:
   postgres_data:
