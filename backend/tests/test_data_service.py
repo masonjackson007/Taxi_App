@@ -7,7 +7,7 @@ from services.data_service import DataService
 def data_service():
     """Provides a fresh instance of DataService for each test"""
     service = DataService()
-    service.data_path = "/Taxi_App/data/taxi_data_mockup.parquet"
+    service.data_path = Path("/Taxi_App/data/taxi_data_mockup.parquet")
     return service
 
 def test_successful_data_load(data_service):

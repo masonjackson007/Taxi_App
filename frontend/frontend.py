@@ -201,12 +201,14 @@ st.sidebar.header("Filters")
 
 selected_start_date = st.sidebar.date_input(
     "Start Date",
+    value=date(2025, 1, 1),
     min_value=min_available_date,
     max_value=max_available_date
 )
 
 selected_end_date = st.sidebar.date_input(
     "End Date",
+    value=date(2025, 1, 31),
     min_value=min_available_date, 
     max_value=max_available_date
 )
