@@ -8,13 +8,6 @@ from services.data_service import DataService
 from services.auth_service import AuthService
 from database import init_db
 
-app = Flask(__name__)
-
-# Configure JWT
-app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY") 
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
-jwt = JWTManager(app)
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -22,10 +15,23 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Log startup information
+logger.info("Backend starting up")
+
+app = Flask(__name__)
+
+# Configure JWT
+app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY") 
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
+jwt = JWTManager(app)
+
 # Initialize database
-with app.app_context():
-    init_db()
-    logger.info("Database initialized")
+try:
+    with app.app_context():
+        init_db()
+        logger.info("Database initialized")
+except Exception as e:
+    logger.error(f"Database initialization error: {str(e)}")
 
 @app.route('/test')
 def test_endpoint():
